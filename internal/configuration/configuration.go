@@ -10,7 +10,7 @@ import (
 
 type Configuration struct {
 	RunAddress           string
-	DatabaseUri          string
+	DatabaseURI          string
 	AccrualSystemAddress string
 	JwtSecret            string
 	JwtLifetimeHours     int
@@ -18,7 +18,7 @@ type Configuration struct {
 
 type envs struct {
 	RunAddress           string `env:"RUN_ADDRESS"`
-	DatabaseUri          string `env:"DATABASE_URI"`
+	DatabaseURI          string `env:"DATABASE_URI"`
 	AccrualSystemAddress string `env:"ACCRUAL_SYSTEM_ADDRESS"`
 	JwtSecret            string `env:"JWT_SECRET"`
 	JwtLifetimeHours     int    `env:"JWT_LIFETIME_HOURS"`
@@ -28,7 +28,7 @@ func Configure() *Configuration {
 	var config Configuration
 
 	flag.StringVar(&config.RunAddress, "a", "localhost:8080", "Адрес и порт запуска сервиса")
-	flag.StringVar(&config.DatabaseUri, "d", "", "Адрес подключения к базе данных")
+	flag.StringVar(&config.DatabaseURI, "d", "", "Адрес подключения к базе данных")
 	flag.StringVar(&config.AccrualSystemAddress, "r", "", "Адрес системы расчёта начислений")
 	flag.StringVar(&config.JwtSecret, "j", "secret", "JWT секрет")
 	flag.IntVar(&config.JwtLifetimeHours, "l", 24, "Время жизни JWT токена в часах")
@@ -47,7 +47,7 @@ func Configure() *Configuration {
 
 	_, exists = os.LookupEnv("DATABASE_URI")
 	if exists {
-		config.DatabaseUri = envVariables.DatabaseUri
+		config.DatabaseURI = envVariables.DatabaseURI
 	}
 
 	_, exists = os.LookupEnv("ACCRUAL_SYSTEM_ADDRESS")

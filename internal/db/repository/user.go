@@ -45,7 +45,7 @@ func (d *UserRepository) GetUserByLogin(login string) (*model.User, error) {
 	row := d.db.QueryRow(`SELECT * FROM users WHERE login = $1`, login)
 
 	var user model.User
-	err := row.Scan(&user.Id, &user.Login, &user.Password)
+	err := row.Scan(&user.ID, &user.Login, &user.Password)
 	if err != nil {
 		zap.L().Error("Failed to query user by login", zap.String("login", login), zap.Error(err))
 		//if errors.Is(err, sql.ErrNoRows) {

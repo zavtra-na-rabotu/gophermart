@@ -23,7 +23,7 @@ func main() {
 	router.Use(middleware.Logger)
 
 	// Init database
-	dbConnection, err := db.NewDBStorage(config.DatabaseUri)
+	dbConnection, err := db.NewDBStorage(config.DatabaseURI)
 	if err != nil {
 		zap.S().Fatal("Failed to connect to database", zap.Error(err))
 	}
