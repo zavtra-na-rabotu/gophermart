@@ -18,10 +18,10 @@ var (
 
 type UserService struct {
 	userRepository *repository.UserRepository
-	jwtGenerator   *security.JwtGenerator
+	jwtGenerator   *security.JwtService
 }
 
-func NewUserService(userRepository *repository.UserRepository, jwtGenerator *security.JwtGenerator) *UserService {
+func NewUserService(userRepository *repository.UserRepository, jwtGenerator *security.JwtService) *UserService {
 	return &UserService{userRepository: userRepository, jwtGenerator: jwtGenerator}
 }
 
@@ -32,13 +32,13 @@ func (s *UserService) RegisterUser(request *dto.RegisterUserRequest) (string, er
 		return "", err
 	}
 
-	err = s.userRepository.CreateUser(request.Login, hash)
+	user, err := s.userRepository.CreateUser(request.Login, hash)
 	if err != nil {
 		zap.L().Error("Failed to create user", zap.Error(err))
 		return "", err
 	}
 
-	return s.jwtGenerator.GenerateJwtToken(request.Login)
+	return s.jwtGenerator.GenerateJwtToken(user.ID)
 }
 
 func (s *UserService) LoginUser(request *dto.LoginUserRequest) (string, error) {
@@ -53,5 +53,5 @@ func (s *UserService) LoginUser(request *dto.LoginUserRequest) (string, error) {
 		return "", ErrIncorrectLoginOrPassword
 	}
 
-	return s.jwtGenerator.GenerateJwtToken(user.Login)
+	return s.jwtGenerator.GenerateJwtToken(user.ID)
 }

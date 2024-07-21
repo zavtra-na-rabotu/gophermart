@@ -35,7 +35,7 @@ func (h *UserHandler) RegisterUser() http.HandlerFunc {
 		//var user = model.User{Login: request.Login, Password: request.Password}
 		token, err := h.userService.RegisterUser(&request)
 		if err != nil {
-			if errors.Is(err, repository.ErrUniqueConstraintViolation) {
+			if errors.Is(err, repository.ErrUserAlreadyExists) {
 				http.Error(w, "User already exists", http.StatusConflict)
 				return
 			}
@@ -71,12 +71,6 @@ func (h *UserHandler) LoginUser() http.HandlerFunc {
 		}
 
 		w.Header().Set("Authorization", "Bearer "+token)
-		w.WriteHeader(http.StatusOK)
-	}
-}
-
-func UploadOrder() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}
 }

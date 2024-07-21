@@ -9,13 +9,9 @@ import (
 	"go.uber.org/zap"
 )
 
-//type UserRepository interface {
-//	CreateUser(login string, password string) error
-//}
-
 var (
-	ErrUniqueConstraintViolation = errors.New("unique constraint violation")
-	ErrUserNotFound              = errors.New("user not found")
+	ErrUserAlreadyExists = errors.New("user already exist")
+	ErrUserNotFound      = errors.New("user not found")
 )
 
 type UserRepository struct {
@@ -26,19 +22,20 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 	return &UserRepository{db: db}
 }
 
-func (d *UserRepository) CreateUser(login string, password string) error {
-	_, err := d.db.Exec(`
-		INSERT INTO users (login, password) VALUES ($1, $2)
-	`, login, password)
+func (d *UserRepository) CreateUser(login string, password string) (*model.User, error) {
+	row := d.db.QueryRow(`INSERT INTO users (login, password) VALUES ($1, $2) RETURNING *`, login, password)
+
+	var user model.User
+	err := row.Scan(&user.ID, &user.Login, &user.Password)
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) && pgErr.Code == pgerrcode.UniqueViolation {
-			return ErrUniqueConstraintViolation
+			return nil, ErrUserAlreadyExists
 		}
-		return err
+		return nil, err
 	}
 
-	return nil
+	return &user, nil
 }
 
 func (d *UserRepository) GetUserByLogin(login string) (*model.User, error) {
@@ -48,9 +45,6 @@ func (d *UserRepository) GetUserByLogin(login string) (*model.User, error) {
 	err := row.Scan(&user.ID, &user.Login, &user.Password)
 	if err != nil {
 		zap.L().Error("Failed to query user by login", zap.String("login", login), zap.Error(err))
-		//if errors.Is(err, sql.ErrNoRows) {
-		//	return nil, ErrUserNotFound
-		//}
 		return nil, err
 	}
 
