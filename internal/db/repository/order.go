@@ -36,14 +36,27 @@ func (d *OrderRepository) CreateOrder(orderNumber string, userID int) error {
 	return nil
 }
 
-func (d *OrderRepository) GetOrder(number string) (*model.Order, error) {
-	row := d.db.QueryRow(`SELECT id, number, status, user_id, accrual, uploaded_at FROM orders WHERE number = $1`, number)
+func (d *OrderRepository) GetOrder(orderNumber string) (*model.Order, error) {
+	row := d.db.QueryRow(`SELECT id, number, status, user_id, accrual, uploaded_at FROM orders WHERE number = $1`, orderNumber)
 
-	var order model.Order
-	err := row.Scan(&order.ID, &order.Number, &order.Status, &order.UserID, &order.Accrual, &order.UploadedAt)
+	var ID, userID int
+	var number string
+	var status model.OrderStatus
+	var accrual sql.NullFloat64
+	var uploadedAt time.Time
+
+	err := row.Scan(&ID, &number, &status, &userID, &accrual, &uploadedAt)
 	if err != nil {
 		zap.L().Error("Failed to get order by number", zap.String("number", number), zap.Error(err))
 		return nil, err
+	}
+
+	order := model.Order{
+		Number:     number,
+		Status:     status,
+		Accrual:    accrual.Float64,
+		UserID:     userID,
+		UploadedAt: uploadedAt,
 	}
 
 	return &order, nil
