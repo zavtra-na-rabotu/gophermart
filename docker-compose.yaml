@@ -1,0 +1,12 @@
+services:
+  db:
+    container_name: gophermart_postgres
+    image: postgres:latest
+    tmpfs:
+      - /var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=gophermart
+      - POSTGRES_USER=gophermart
+      - POSTGRES_PASSWORD=gophermart
+    ports:
+      - '5432:5432'
