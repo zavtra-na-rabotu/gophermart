@@ -8,10 +8,12 @@ import (
 	"strings"
 )
 
+type contextKey string
+
 const (
-	authorizationHeader = "Authorization"
-	authorizationPrefix = "Bearer "
-	UserIDKey           = "userId"
+	authorizationHeader string     = "Authorization"
+	authorizationPrefix string     = "Bearer "
+	UserIDKey           contextKey = "userId"
 )
 
 func AuthorizationMiddleware(jwtService *security.JwtService) func(next http.Handler) http.Handler {
@@ -36,14 +38,6 @@ func AuthorizationMiddleware(jwtService *security.JwtService) func(next http.Han
 				http.Error(w, err.Error(), http.StatusUnauthorized)
 				return
 			}
-
-			// Добавляем пользователя в контекст запроса
-			//userID := claims.UserId
-			//if err != nil {
-			//	zap.L().Error("Error extracting subject", zap.String("token", token), zap.Error(err))
-			//	http.Error(w, err.Error(), http.StatusUnauthorized)
-			//	return
-			//}
 
 			ctx := context.WithValue(r.Context(), UserIDKey, claims.UserID)
 
