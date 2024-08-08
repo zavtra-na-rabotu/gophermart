@@ -61,6 +61,10 @@ func (r *OrderRepository) GetAllNotTerminated() ([]model.Order, error) {
 		orders = append(orders, order)
 	}
 
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
 	return orders, nil
 }
 
@@ -129,6 +133,10 @@ func (r *OrderRepository) GetOrders(userID int) ([]model.Order, error) {
 		}
 
 		orders = append(orders, order)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
 	}
 
 	return orders, nil
