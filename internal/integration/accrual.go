@@ -5,7 +5,11 @@ import (
 	"github.com/zavtra-na-rabotu/gophermart/internal/dto"
 	"go.uber.org/zap"
 	"net/http"
+	"strconv"
+	"time"
 )
+
+const defaultTooManyRequestsWaitTime int = 60
 
 type AccrualClient struct {
 	client *resty.Client
@@ -33,8 +37,22 @@ func (c *AccrualClient) ProcessOrder(orderNumber string) (*dto.AccrualOrderRespo
 	}
 
 	if response.StatusCode() == http.StatusTooManyRequests {
-		zap.L().Error("Too many requests", zap.String("orderNumber", orderNumber))
-		return nil, err
+		retryAfterHeader := response.Header().Get("Retry-After")
+
+		timeToWait := defaultTooManyRequestsWaitTime
+
+		if retryAfterHeader != "" {
+			retryAfter, err := strconv.Atoi(retryAfterHeader)
+			if err == nil {
+				timeToWait = retryAfter
+			} else {
+				zap.L().Error("Invalid Retry-After header", zap.String("orderNumber", orderNumber), zap.Int("Retry-After", retryAfter), zap.Error(err))
+			}
+		}
+
+		zap.L().Info("Too many requests, waiting before retry", zap.Int("Retry-After (seconds)", timeToWait))
+		time.Sleep(time.Duration(timeToWait) * time.Second)
+		return c.ProcessOrder(orderNumber)
 	}
 
 	if response.StatusCode() == http.StatusInternalServerError {

@@ -47,6 +47,10 @@ func (r *WithdrawalRepository) GetWithdrawals(userID int) ([]model.Withdrawal, e
 		withdrawals = append(withdrawals, withdrawal)
 	}
 
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
 	return withdrawals, nil
 }
 
